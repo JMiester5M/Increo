@@ -6,8 +6,10 @@ export async function GET(request) {
   try {
     const decodedToken = await verifyFirebaseToken(request)
     if (!decodedToken) {
+      console.error("Token verification failed in financial-info GET")
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
+    console.log("Financial info GET - User authenticated:", decodedToken.uid)
 
     const user = await prisma.user.findUnique({
       where: { id: decodedToken.uid },
@@ -36,17 +38,104 @@ export async function POST(request) {
     }
 
     const body = await request.json()
-    const { monthlyIncome, surveyCompleted } = body
+    const { 
+      monthlyIncome,
+      incomeFrequency,
+      monthlyRent,
+      propertyTax,
+      homeInsurance,
+      electricity,
+      water,
+      gas,
+      internet,
+      groceries,
+      diningOut,
+      carPayment,
+      carInsurance,
+      gasFuel,
+      publicTransport,
+      healthInsurance,
+      medications,
+      medicalExpenses,
+      creditCards,
+      studentLoans,
+      personalLoans,
+      streaming,
+      gym,
+      hobbies,
+      clothing,
+      personalCare,
+      childcare,
+      petCare,
+      otherExpenses,
+      surveyCompleted 
+    } = body
 
     const financialInfo = await prisma.financialInfo.upsert({
       where: { userId: decodedToken.uid },
       update: {
         monthlyIncome,
+        incomeFrequency,
+        monthlyRent,
+        propertyTax,
+        homeInsurance,
+        electricity,
+        water,
+        gas,
+        internet,
+        groceries,
+        diningOut,
+        carPayment,
+        carInsurance,
+        gasFuel,
+        publicTransport,
+        healthInsurance,
+        medications,
+        medicalExpenses,
+        creditCards,
+        studentLoans,
+        personalLoans,
+        streaming,
+        gym,
+        hobbies,
+        clothing,
+        personalCare,
+        childcare,
+        petCare,
+        otherExpenses,
         surveyCompleted,
       },
       create: {
         userId: decodedToken.uid,
         monthlyIncome,
+        incomeFrequency,
+        monthlyRent,
+        propertyTax,
+        homeInsurance,
+        electricity,
+        water,
+        gas,
+        internet,
+        groceries,
+        diningOut,
+        carPayment,
+        carInsurance,
+        gasFuel,
+        publicTransport,
+        healthInsurance,
+        medications,
+        medicalExpenses,
+        creditCards,
+        studentLoans,
+        personalLoans,
+        streaming,
+        gym,
+        hobbies,
+        clothing,
+        personalCare,
+        childcare,
+        petCare,
+        otherExpenses,
         surveyCompleted,
       },
     })

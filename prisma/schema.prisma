@@ -8,25 +8,55 @@ generator client {
 }
 
 model User {
-  id            String          @id // Firebase UID
-  name          String?
-  email         String?         @unique
-  image         String?
-  financialInfo FinancialInfo?
-  goals         Goal[]
-  expenses      Expense[]
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
+  id                 String          @id // Firebase UID
+  name               String?
+  email              String?         @unique
+  image              String?
+  role               String          @default("user") // "user", "staff", "admin"
+  expenseCategories  String[]        @default(["Food", "Transportation", "Housing", "Entertainment", "Shopping", "Healthcare", "Other"])
+  financialInfo      FinancialInfo?
+  goals              Goal[]
+  expenses           Expense[]
+  createdAt          DateTime        @default(now()) @db.Timestamptz(6)
+  updatedAt          DateTime        @updatedAt @db.Timestamptz(6)
 }
 
 model FinancialInfo {
-  id              String   @id @default(cuid())
-  userId          String   @unique
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  monthlyIncome   Float?
-  surveyCompleted Boolean  @default(false)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id                      String   @id @default(cuid())
+  userId                  String   @unique
+  user                    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  monthlyIncome           Float?
+  incomeFrequency         String?
+  monthlyRent             Float?
+  propertyTax             Float?
+  homeInsurance           Float?
+  electricity             Float?
+  water                   Float?
+  gas                     Float?
+  internet                Float?
+  groceries               Float?
+  diningOut               Float?
+  carPayment              Float?
+  carInsurance            Float?
+  gasFuel                 Float?
+  publicTransport         Float?
+  healthInsurance         Float?
+  medications             Float?
+  medicalExpenses         Float?
+  creditCards             Float?
+  studentLoans            Float?
+  personalLoans           Float?
+  streaming               Float?
+  gym                     Float?
+  hobbies                 Float?
+  clothing                Float?
+  personalCare            Float?
+  childcare               Float?
+  petCare                 Float?
+  otherExpenses           Float?
+  surveyCompleted         Boolean  @default(false)
+  createdAt               DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt               DateTime @updatedAt @db.Timestamptz(6)
 }
 
 model Goal {
@@ -37,10 +67,10 @@ model Goal {
   description   String?
   targetAmount  Float
   currentAmount Float     @default(0)
-  deadline      DateTime?
+  deadline      DateTime? @db.Timestamptz(6)
   completed     Boolean   @default(false)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  createdAt     DateTime  @default(now()) @db.Timestamptz(6)
+  updatedAt     DateTime  @updatedAt @db.Timestamptz(6)
 }
 
 model Expense {
@@ -51,7 +81,7 @@ model Expense {
   subcategory String?
   amount      Float
   description String?
-  date        DateTime @default(now())
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  date        DateTime @default(now()) @db.Timestamptz(6)
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @db.Timestamptz(6)
 }

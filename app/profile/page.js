@@ -3,6 +3,9 @@
 import { useState, useEffect } from "react"
 import { useAuthState } from "react-firebase-hooks/auth"
 import { auth } from "@/lib/firebase"
+import { Card } from "@/components/ui/Card"
+import { Button } from "@/components/ui/Button"
+import Link from "next/link"
 
 export default function ProfilePage() {
   const [user] = useAuthState(auth)
@@ -34,87 +37,90 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">Profile</h1>
-        <p className="mt-2 text-gray-600">Manage your account and preferences</p>
+    <div className="space-y-8" style={{ maxWidth: '900px', margin: '0 auto' }}>
+      <div style={{ marginBottom: '1.5rem' }}>
+        <h1 style={{ 
+          fontFamily: 'Space Grotesk, sans-serif',
+          fontSize: '1.875rem',
+          fontWeight: '700',
+          color: '#0F172A',
+          marginBottom: '0.375rem'
+        }}>
+          Profile Settings
+        </h1>
+        <p style={{ fontSize: '0.875rem', color: '#64748B' }}>
+          Manage your account preferences and settings
+        </p>
       </div>
 
-      {/* Profile Info */}
-      <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-        <h2 className="text-xl font-semibold text-gray-900 mb-6">Account Information</h2>
-
-        <div className="space-y-4">
-          <div className="flex items-center gap-4">
+      {/* Profile Picture */}
+      <Card>
+        <div className="flex flex-col items-center text-center">
+          <div style={{ position: 'relative' }}>
             <img
               src={user?.photoURL || "/default-avatar.png"}
               alt={user?.displayName || "User"}
-              className="h-20 w-20 rounded-full"
+              style={{
+                height: '112px',
+                width: '112px',
+                borderRadius: '50%',
+                boxShadow: '0 4px 12px rgba(5, 150, 105, 0.15)',
+                border: '3px solid white',
+                objectFit: 'cover'
+              }}
             />
-            <div>
-              <p className="text-lg font-semibold text-gray-900">{user?.displayName}</p>
-              <p className="text-gray-600">{user?.email}</p>
+            <div style={{
+              position: 'absolute',
+              bottom: '2px',
+              right: '2px',
+              width: '28px',
+              height: '28px',
+              borderRadius: '50%',
+              background: 'linear-gradient(135deg, #059669, #047857)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 2px 6px rgba(0, 0, 0, 0.12)',
+              border: '2px solid white',
+              fontSize: '0.875rem'
+            }}>
+              ✓
             </div>
           </div>
-
-          <div className="border-t border-gray-200 pt-4">
-            <h3 className="text-sm font-medium text-gray-700 mb-2">Member Since</h3>
-            <p className="text-gray-900">{new Date().toLocaleDateString()}</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Financial Info */}
-      <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-semibold text-gray-900">Financial Information</h2>
-          <a
-            href="/survey"
-            className="text-sm font-medium text-emerald-600 hover:text-emerald-700"
+          <h2 style={{
+            fontFamily: 'Space Grotesk, sans-serif',
+            fontSize: '1.375rem',
+            fontWeight: '700',
+            color: '#0F172A',
+            marginTop: '1.25rem'
+          }}>
+            {user?.displayName}
+          </h2>
+          <p style={{ fontSize: '0.875rem', color: '#64748B', marginTop: '0.375rem', marginBottom: '1.25rem' }}>
+            {user?.email}
+          </p>
+          <Button 
+            variant="secondary" 
+            style={{
+              fontSize: '0.8125rem',
+              padding: '0.625rem 1.25rem',
+              borderRadius: '10px'
+            }}
           >
-            Update
-          </a>
+            Change Photo
+          </Button>
         </div>
-
-        {financialInfo?.surveyCompleted ? (
-          <div className="space-y-3">
-            <div className="flex justify-between">
-              <span className="text-gray-600">Monthly Income</span>
-              <span className="font-semibold text-gray-900">
-                ${financialInfo.monthlyIncome?.toLocaleString() || "Not set"}
-              </span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">Survey Status</span>
-              <span className="inline-flex items-center rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-medium text-emerald-800">
-                Completed
-              </span>
-            </div>
-          </div>
-        ) : (
-          <div className="text-center py-8">
-            <p className="text-gray-600 mb-4">
-              Complete your financial survey to unlock all features
-            </p>
-            <a
-              href="/survey"
-              className="inline-flex items-center justify-center rounded-lg bg-emerald-500 px-4 py-2 text-white font-medium hover:bg-emerald-600 transition-colors"
-            >
-              Complete Survey
-            </a>
-          </div>
-        )}
-      </div>
+      </Card>
 
       {/* Preferences */}
-      <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-        <h2 className="text-xl font-semibold text-gray-900 mb-6">Preferences</h2>
+      <Card>
+        <h2 className="text-heading-md text-gray-900 mb-6">Preferences</h2>
 
-        <div className="space-y-4">
+        <div className="space-y-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="font-medium text-gray-900">Email Notifications</p>
-              <p className="text-sm text-gray-600">Receive updates about your goals</p>
+              <p className="text-body font-medium text-gray-900">Email Notifications</p>
+              <p className="text-body-sm text-gray-600">Receive updates about your account</p>
             </div>
             <label className="relative inline-flex items-center cursor-pointer">
               <input type="checkbox" className="sr-only peer" defaultChecked />
@@ -122,18 +128,40 @@ export default function ProfilePage() {
             </label>
           </div>
 
-          <div className="flex items-center justify-between border-t border-gray-200 pt-4">
+          <div className="flex items-center justify-between border-t border-gray-200 pt-6">
             <div>
-              <p className="font-medium text-gray-900">Goal Reminders</p>
-              <p className="text-sm text-gray-600">Get reminded about goal deadlines</p>
+              <p className="text-body font-medium text-gray-900">Goal Reminders</p>
+              <p className="text-body-sm text-gray-600">Get notified about upcoming deadlines</p>
             </div>
             <label className="relative inline-flex items-center cursor-pointer">
               <input type="checkbox" className="sr-only peer" defaultChecked />
+              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-emerald-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+            </label>
+          </div>
+
+          <div className="flex items-center justify-between border-t border-gray-200 pt-6">
+            <div>
+              <p className="text-body font-medium text-gray-900">Spending Alerts</p>
+              <p className="text-body-sm text-gray-600">Alerts when spending is high</p>
+            </div>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" className="sr-only peer" defaultChecked />
+              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-emerald-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+            </label>
+          </div>
+
+          <div className="flex items-center justify-between border-t border-gray-200 pt-6">
+            <div>
+              <p className="text-body font-medium text-gray-900">Weekly Summary</p>
+              <p className="text-body-sm text-gray-600">Get a weekly financial summary email</p>
+            </div>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" className="sr-only peer" />
               <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-emerald-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
             </label>
           </div>
         </div>
-      </div>
+      </Card>
     </div>
   )
 }

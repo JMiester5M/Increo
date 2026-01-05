@@ -6,12 +6,16 @@ import { signOut } from "firebase/auth"
 import { useRouter, usePathname } from "next/navigation"
 import Link from "next/link"
 import { useEffect, useState } from "react"
+import { useStaffAccess } from "@/lib/useStaffAccess"
 
 export default function DashboardLayout({ children }) {
   const [user, loading] = useAuthState(auth)
   const router = useRouter()
   const pathname = usePathname()
   const [surveyCompleted, setSurveyCompleted] = useState(null)
+  const [userExists, setUserExists] = useState(null)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const { isStaff } = useStaffAccess()
 
   useEffect(() => {
     if (!loading && !user) {
@@ -21,19 +25,45 @@ export default function DashboardLayout({ children }) {
 
   useEffect(() => {
     if (user) {
-      // Check if user has completed survey
-      user.getIdToken().then(token => {
-        fetch("/api/user/financial-info", {
-          headers: { Authorization: `Bearer ${token}` },
-        })
-          .then(res => res.json())
-          .then(data => {
-            setSurveyCompleted(data?.surveyCompleted || false)
-          })
-          .catch(() => setSurveyCompleted(false))
+      // Check if user exists in database
+      fetch("/api/user/sync", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          uid: user.uid,
+          email: user.email,
+          checkOnly: true,
+        }),
       })
+        .then(res => res.json())
+        .then(data => {
+          if (!data.exists) {
+            // User not in database, sign them out
+            signOut(auth).then(() => {
+              router.push("/")
+            })
+          } else {
+            setUserExists(true)
+            // Check if user has completed survey
+            user.getIdToken().then(token => {
+              fetch("/api/user/financial-info", {
+                headers: { Authorization: `Bearer ${token}` },
+              })
+                .then(res => res.json())
+                .then(data => {
+                  setSurveyCompleted(data?.surveyCompleted || false)
+                })
+                .catch(() => setSurveyCompleted(false))
+            })
+          }
+        })
+        .catch(() => {
+          signOut(auth).then(() => {
+            router.push("/")
+          })
+        })
     }
-  }, [user])
+  }, [user, router])
 
   const handleSignOut = async () => {
     try {
@@ -52,88 +82,235 @@ export default function DashboardLayout({ children }) {
     )
   }
 
-  if (!user) {
+  if (!user || userExists === false) {
     return null
+  }
+
+  if (userExists === null) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="h-12 w-12 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent"></div>
+      </div>
+    )
   }
 
   const navItems = [
     { href: "/dashboard", label: "Dashboard", icon: "🏠" },
     { href: "/goals", label: "Goals", icon: "🎯" },
     { href: "/spending", label: "Spending", icon: "💳" },
+    { href: "/my-info", label: "My Info", icon: "📊" },
     { href: "/profile", label: "Profile", icon: "👤" },
   ]
 
+  if (isStaff) {
+    navItems.push(
+      { href: "/dashboard/staff", label: "Staff Dashboard", icon: "🛡️" },
+      { href: "/dashboard/staff/users", label: "Users", icon: "👥" }
+    )
+  }
+
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="min-h-screen overflow-x-hidden" style={{ background: 'linear-gradient(180deg, #F8FAFC 0%, #F1F5F9 100%)' }}>
       {/* Sidebar */}
-      <aside className="fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-200 flex flex-col">
-        <div className="flex items-center gap-3 px-6 py-4 border-b border-gray-200">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-500 to-blue-500 text-white font-bold">
-            I
+      <div 
+        className={`fixed top-0 bottom-0 left-0 z-50 w-64 transform transition-transform duration-300 ease-in-out ${
+          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
+        style={{ 
+          backgroundColor: '#FFFFFF',
+          boxShadow: sidebarOpen ? '2px 0 8px rgba(0, 0, 0, 0.1)' : 'none',
+          height: 'calc(100vh - 20px)',
+          marginTop: '10px',
+          marginBottom: '10px',
+          visibility: sidebarOpen ? 'visible' : 'hidden',
+          display: 'flex',
+          flexDirection: 'column'
+        }}
+      >
+        {/* Sidebar Header */}
+        <div className="p-6 border-b border-gray-200 flex-shrink-0">
+          <div className="flex items-center justify-between">
+            <span className="text-xl font-bold text-emerald-600" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
+              Increo
+            </span>
+            <button 
+              onClick={() => setSidebarOpen(false)}
+              className="w-8 h-8 flex items-center justify-center hover:bg-gray-100 rounded-lg transition-all"
+            >
+              <span className="text-xl">✕</span>
+            </button>
           </div>
-          <span className="text-xl font-bold text-gray-900">Increo</span>
         </div>
 
-        <nav className="flex-1 space-y-1 px-3 py-4">
-          {navItems.map((item) => {
-            const isActive = pathname === item.href
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-                  isActive
-                    ? "bg-emerald-50 text-emerald-600"
-                    : "text-gray-700 hover:bg-gray-50"
-                }`}
-              >
-                <span className="text-lg">{item.icon}</span>
-                {item.label}
-              </Link>
-            )
-          })}
+        {/* Navigation Links */}
+        <nav className="flex-1 p-4 overflow-y-auto">
+          <div className="space-y-2">
+            {navItems.map((item) => {
+              const isActive = pathname === item.href
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setSidebarOpen(false)}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
+                    isActive 
+                      ? 'bg-emerald-50 text-emerald-600 font-semibold' 
+                      : 'text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  <span className="text-xl">{item.icon}</span>
+                  <span className="font-medium">{item.label}</span>
+                </Link>
+              )
+            })}
+          </div>
         </nav>
 
-        <div className="border-t border-gray-200 p-4">
-          <div className="flex items-center gap-3 mb-3">
-            <img
-              src={user.photoURL || "/default-avatar.png"}
-              alt={user.displayName || "User"}
-              className="h-10 w-10 rounded-full"
-            />
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900 truncate">
-                {user.displayName}
-              </p>
-              <p className="text-xs text-gray-500 truncate">
-                {user.email}
-              </p>
+        {/* User Info */}
+        <div className="p-6 border-t border-gray-200 flex-shrink-0">
+          <div className="flex flex-col gap-1" style={{ maxWidth: '100%' }}>
+            <div 
+              className="font-medium text-gray-900"
+              style={{ 
+                fontSize: 'clamp(0.75rem, 2vw, 0.875rem)',
+                wordBreak: 'break-word',
+                overflowWrap: 'break-word',
+                lineHeight: '1.3'
+              }}
+            >
+              {user?.displayName || 'User'}
+            </div>
+            <div 
+              className="text-gray-500"
+              style={{ 
+                fontSize: 'clamp(0.65rem, 1.8vw, 0.75rem)',
+                wordBreak: 'break-word',
+                overflowWrap: 'break-word',
+                lineHeight: '1.3'
+              }}
+            >
+              {user?.email}
             </div>
           </div>
-          <button
-            onClick={handleSignOut}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
-          >
-            Sign Out
-          </button>
         </div>
-      </aside>
+      </div>
 
-      {/* Main Content */}
-      <main className="ml-64 flex-1">
-        {!surveyCompleted && surveyCompleted !== null && pathname !== "/survey" && (
-          <div className="bg-yellow-50 border-b border-yellow-200 px-6 py-3">
-            <p className="text-sm text-yellow-800">
-              📊 Complete your{" "}
-              <Link href="/survey" className="font-medium underline">
+      {/* Overlay */}
+      {sidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-40"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      {/* Header */}
+      <header className="bg-white sticky top-0 z-30" style={{ padding: '1.5rem 2.5rem', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)' }}>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center" style={{ gap: '2rem' }}>
+            <button 
+              onClick={() => setSidebarOpen(true)}
+              className="flex items-center justify-center rounded-xl transition-all"
+              style={{
+                width: '44px',
+                height: '44px',
+                background: 'linear-gradient(135deg, #F1F5F9, #E2E8F0)',
+                border: '1px solid #CBD5E1',
+                boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'linear-gradient(135deg, #E2E8F0, #CBD5E1)'
+                e.currentTarget.style.transform = 'translateY(-1px)'
+                e.currentTarget.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.1)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'linear-gradient(135deg, #F1F5F9, #E2E8F0)'
+                e.currentTarget.style.transform = 'translateY(0)'
+                e.currentTarget.style.boxShadow = '0 1px 2px rgba(0, 0, 0, 0.05)'
+              }}
+            >
+              <span style={{ fontSize: '1.25rem', color: '#475569' }}>☰</span>
+            </button>
+            <div className="flex items-center gap-2">
+              <span style={{ 
+                fontSize: '1.5rem',
+                fontWeight: '700',
+                color: '#059669',
+                fontFamily: 'Space Grotesk, sans-serif'
+              }}>
+                Increo
+              </span>
+            </div>
+          </div>
+          <div className="flex items-center gap-5">
+            {user?.photoURL ? (
+              <img
+                src={user.photoURL}
+                alt={user?.displayName || "User"}
+                className="rounded-full cursor-pointer"
+                style={{ 
+                  width: '44px',
+                  height: '44px',
+                  objectFit: 'cover',
+                  border: '2px solid #059669'
+                }}
+              />
+            ) : (
+              <div 
+                className="rounded-full flex items-center justify-center text-white font-semibold cursor-pointer"
+                style={{ 
+                  width: '44px',
+                  height: '44px',
+                  background: 'linear-gradient(135deg, #059669, #047857)',
+                  fontSize: '1.125rem'
+                }}
+              >
+                {user?.displayName?.charAt(0) || 'U'}
+              </div>
+            )}
+            <button
+              onClick={handleSignOut}
+              style={{
+                padding: '0.625rem 1.25rem',
+                border: '1px solid #E2E8F0',
+                background: 'white',
+                borderRadius: '10px',
+                fontSize: '1rem',
+                fontWeight: '500',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+                color: '#0F172A'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = '#F8FAFC'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'white'
+              }}
+            >
+              Logout
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* Survey Banner */}
+      {!surveyCompleted && surveyCompleted !== null && pathname !== "/survey" && (
+        <div className="bg-amber-50 border-b border-amber-200 px-6 py-4">
+          <div className="flex items-center gap-3">
+            <span className="text-2xl">📊</span>
+            <p className="text-sm font-medium text-amber-900">
+              Complete your{" "}
+              <Link href="/survey" className="font-bold underline hover:text-amber-700 transition-colors">
                 financial survey
               </Link>{" "}
-              to unlock all features
+              to unlock personalized insights and all features
             </p>
           </div>
-        )}
-        <div className="p-8">{children}</div>
-      </main>
+        </div>
+      )}
+
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto p-8">{children}</main>
     </div>
   )
 }

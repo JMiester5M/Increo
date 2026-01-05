@@ -6,8 +6,10 @@ export async function GET(request) {
   try {
     const decodedToken = await verifyFirebaseToken(request)
     if (!decodedToken) {
+      console.error("Token verification failed in goals GET")
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
+    console.log("Goals GET - User authenticated:", decodedToken.uid)
 
     const goals = await prisma.goal.findMany({
       where: { userId: decodedToken.uid },
