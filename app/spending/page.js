@@ -279,21 +279,32 @@ export default function SpendingPage() {
             Other: '📌'
           }
           const categoryIcon = categoryIcons[category] || '📊'
+          const percentageOfTotal = totalExpenses > 0 ? (categoryTotal / totalExpenses) * 100 : 0
           const isExpanded = expandedCategories[category] || false
           
           return (
             <div 
               key={category} 
-              className="bg-white rounded-2xl p-5 overflow-hidden card-hover"
+              className="card-hover"
               style={{ 
+                background: 'linear-gradient(135deg, #ffffff 0%, #fef2f2 100%)',
+                padding: '1.5rem',
+                borderRadius: '16px',
                 boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
-                border: '1px solid #F1F5F9',
+                border: '1px solid rgba(239, 68, 68, 0.1)',
                 transition: 'all 0.3s ease'
               }}
             >
               <button
                 onClick={() => setExpandedCategories(prev => ({ ...prev, [category]: !prev[category] }))}
                 className="w-full flex items-center justify-between text-left"
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  padding: 0,
+                  margin: 0,
+                  cursor: 'pointer'
+                }}
               >
                 <div className="flex items-center gap-3">
                   <div style={{
@@ -303,8 +314,9 @@ export default function SpendingPage() {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    background: 'linear-gradient(135deg, #F0FDF4 0%, #D1FAE5 100%)',
-                    borderRadius: '12px'
+                    background: 'linear-gradient(135deg, #ECFDF5 0%, #D1FAE5 100%)',
+                    borderRadius: '14px',
+                    boxShadow: '0 3px 8px rgba(16, 185, 129, 0.25)'
                   }}>
                     {categoryIcon}
                   </div>
@@ -324,46 +336,93 @@ export default function SpendingPage() {
                   </div>
                 </div>
                 <div className="flex items-center gap-4">
-                  <span style={{ 
-                    fontFamily: 'JetBrains Mono, monospace',
-                    fontSize: '1.25rem',
-                    fontWeight: '700',
-                    color: '#DC2626'
-                  }}>
-                    ${categoryTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                  </span>
-                  <svg 
-                    className={`h-5 w-5 transition-transform ${ isExpanded ? 'rotate-180' : ''}`}
-                    style={{ color: '#64748B' }}
-                    fill="none" 
-                    stroke="currentColor" 
-                    viewBox="0 0 24 24"
+                  <div style={{ textAlign: 'right' }}>
+                    <span style={{ 
+                      display: 'block',
+                      fontFamily: 'JetBrains Mono, monospace',
+                      fontSize: '1.25rem',
+                      fontWeight: '700',
+                      color: '#059669'
+                    }}>
+                      ${categoryTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </span>
+                  </div>
+                  <span
+                    aria-hidden="true"
+                    style={{
+                      display: 'inline-block',
+                      fontSize: '1.25rem',
+                      lineHeight: 1,
+                      color: '#047857',
+                      transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
+                      transition: 'transform 0.2s ease'
+                    }}
                   >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
+                    ˅
+                  </span>
                 </div>
               </button>
 
               {isExpanded && (
                 <div className="mt-4 pt-4 space-y-2" style={{ borderTop: '1px solid #E5E7EB' }}>
+                  <div style={{
+                    width: '100%',
+                    height: '6px',
+                    borderRadius: '999px',
+                    overflow: 'hidden',
+                    backgroundColor: '#E2E8F0',
+                    marginBottom: '0.75rem'
+                  }}>
+                    <div
+                      style={{
+                        width: `${Math.min(percentageOfTotal, 100)}%`,
+                        height: '100%',
+                        background: 'linear-gradient(90deg, #6EE7B7, #10B981)',
+                        borderRadius: '999px',
+                        transition: 'width 0.3s ease'
+                      }}
+                    />
+                  </div>
                   {categoryExpenses.map((expense) => (
                     <div
                       key={expense.id}
                       className="flex items-center justify-between p-3 rounded-xl transition-colors hover:bg-gray-50"
+                      style={{
+                        backgroundColor: '#F9FAFB',
+                        border: '1px solid #E5E7EB',
+                        boxShadow: '0 1px 3px rgba(15, 23, 42, 0.06)'
+                      }}
                     >
-                      <div>
-                        <p style={{ fontSize: '0.875rem', fontWeight: '500', color: '#0F172A' }}>
-                          {expense.description || expense.subcategory || category}
-                        </p>
-                        <p style={{ fontSize: '0.875rem', color: '#64748B' }}>
-                          {new Date(expense.date).toLocaleDateString()}
-                        </p>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                        <div style={{
+                          width: '8px',
+                          height: '40px',
+                          borderRadius: '999px',
+                          background: 'linear-gradient(180deg, #A7F3D0, #059669)'
+                        }} />
+                        <div>
+                          <p style={{ fontSize: '0.875rem', fontWeight: '500', color: '#0F172A' }}>
+                            {expense.description || expense.subcategory || category}
+                          </p>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.15rem' }}>
+                            <span style={{
+                              fontSize: '0.75rem',
+                              color: '#64748B'
+                            }}>
+                              {new Date(expense.date).toLocaleDateString()}
+                            </span>
+                          </div>
+                        </div>
                       </div>
                       <span style={{ 
                         fontFamily: 'JetBrains Mono, monospace',
                         fontSize: '0.875rem',
                         fontWeight: '600',
-                        color: '#0F172A'
+                        color: '#047857',
+                        padding: '0.25rem 0.75rem',
+                        borderRadius: '999px',
+                        backgroundColor: '#ECFDF5',
+                        border: '1px solid #A7F3D0'
                       }}>
                         ${expense.amount.toLocaleString()}
                       </span>

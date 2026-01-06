@@ -1,5 +1,6 @@
 "use client"
 
+import Image from "next/image"
 import { useAuthState } from "react-firebase-hooks/auth"
 import { auth } from "@/lib/firebase"
 import { signOut } from "firebase/auth"
@@ -117,34 +118,81 @@ export default function DashboardLayout({ children }) {
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
         style={{ 
-          backgroundColor: '#FFFFFF',
-          boxShadow: sidebarOpen ? '2px 0 8px rgba(0, 0, 0, 0.1)' : 'none',
+          background: 'radial-gradient(circle at top left, #ECFDF5 0%, #E5E7EB 40%, #F9FAFB 100%)',
+          boxShadow: sidebarOpen ? '0 20px 45px rgba(15, 23, 42, 0.35)' : 'none',
+          borderRight: '1px solid rgba(148, 163, 184, 0.35)',
           height: 'calc(100vh - 20px)',
           marginTop: '10px',
           marginBottom: '10px',
+          borderRadius: '0 20px 20px 0',
+          overflowX: 'hidden',
+          overflowY: 'auto',
           visibility: sidebarOpen ? 'visible' : 'hidden',
           display: 'flex',
           flexDirection: 'column'
         }}
       >
         {/* Sidebar Header */}
-        <div className="p-6 border-b border-gray-200 flex-shrink-0">
+        <div className="px-6 pt-6 pb-4 flex-shrink-0" style={{ borderBottom: '1px solid rgba(148, 163, 184, 0.2)' }}>
           <div className="flex items-center justify-between">
-            <span className="text-xl font-bold text-emerald-600" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
-              Increo
-            </span>
+            <div className="flex flex-col">
+              <span
+                style={{
+                  fontFamily: 'Space Grotesk, sans-serif',
+                  fontSize: '1.1rem',
+                  fontWeight: 700,
+                  letterSpacing: '-0.02em',
+                  color: '#0F172A'
+                }}
+              >
+                Increo
+              </span>
+              <span
+                style={{
+                  fontSize: '0.7rem',
+                  letterSpacing: '0.16em',
+                  textTransform: 'uppercase',
+                  color: '#6B7280',
+                  fontWeight: 500
+                }}
+              >
+                Financial Hub
+              </span>
+            </div>
             <button 
               onClick={() => setSidebarOpen(false)}
-              className="w-8 h-8 flex items-center justify-center hover:bg-gray-100 rounded-lg transition-all"
+              className="transition-transform duration-150 ease-out"
+              style={{
+                width: '32px',
+                height: '32px',
+                borderRadius: '999px',
+                border: '1px solid rgba(148, 163, 184, 0.6)',
+                background: 'rgba(255, 255, 255, 0.9)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 1px 3px rgba(15, 23, 42, 0.12)',
+                cursor: 'pointer'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'white';
+                e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                e.currentTarget.style.boxShadow = '0 2px 5px rgba(15, 23, 42, 0.16)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.9)';
+                e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                e.currentTarget.style.boxShadow = '0 1px 3px rgba(15, 23, 42, 0.12)';
+              }}
             >
-              <span className="text-xl">✕</span>
+              <span className="text-sm" style={{ color: '#0F172A', fontWeight: 600 }}>✕</span>
             </button>
           </div>
         </div>
 
         {/* Navigation Links */}
-        <nav className="flex-1 p-4 overflow-y-auto">
-          <div className="space-y-2">
+        <nav className="flex-1 px-3 pt-4 pb-6 overflow-y-auto">
+          <div className="space-y-1">
             {navItems.map((item) => {
               const isActive = pathname === item.href
               return (
@@ -152,14 +200,23 @@ export default function DashboardLayout({ children }) {
                   key={item.href}
                   href={item.href}
                   onClick={() => setSidebarOpen(false)}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
+                  className={`group flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
                     isActive 
-                      ? 'bg-emerald-50 text-emerald-600 font-semibold' 
-                      : 'text-gray-700 hover:bg-gray-50'
+                      ? 'bg-white/90 text-emerald-600 font-semibold shadow-sm' 
+                      : 'text-gray-700 hover:bg-white/70 hover:text-emerald-600'
                   }`}
                 >
-                  <span className="text-xl">{item.icon}</span>
-                  <span className="font-medium">{item.label}</span>
+                  <span className="text-xl">
+                    {item.icon}
+                  </span>
+                  <span className="font-medium tracking-tight">
+                    {item.label}
+                  </span>
+                  {isActive && (
+                    <span
+                      className="ml-auto h-6 w-1 rounded-full bg-emerald-500 group-hover:bg-emerald-600"
+                    />
+                  )}
                 </Link>
               )
             })}
@@ -167,7 +224,7 @@ export default function DashboardLayout({ children }) {
         </nav>
 
         {/* User Info */}
-        <div className="p-6 border-t border-gray-200 flex-shrink-0">
+        <div className="px-6 py-5 flex-shrink-0" style={{ borderTop: '1px solid rgba(148, 163, 184, 0.2)' }}>
           <div className="flex flex-col gap-1" style={{ maxWidth: '100%' }}>
             <div 
               className="font-medium text-gray-900"
@@ -243,9 +300,15 @@ export default function DashboardLayout({ children }) {
           </div>
           <div className="flex items-center gap-5">
             {user?.photoURL ? (
-              <img
+              <Image
                 src={user.photoURL}
                 alt={user?.displayName || "User"}
+                width={44}
+                height={44}
+                onError={(e) => {
+                  e.currentTarget.onerror = null
+                  e.currentTarget.src = "/default-avatar.svg"
+                }}
                 className="rounded-full cursor-pointer"
                 style={{ 
                   width: '44px',
@@ -271,20 +334,23 @@ export default function DashboardLayout({ children }) {
               onClick={handleSignOut}
               style={{
                 padding: '0.625rem 1.25rem',
-                border: '1px solid #E2E8F0',
-                background: 'white',
-                borderRadius: '10px',
-                fontSize: '1rem',
-                fontWeight: '500',
+                border: 'none',
+                background: 'linear-gradient(135deg, #EF4444, #B91C1C)',
+                borderRadius: '999px',
+                fontSize: '0.95rem',
+                fontWeight: '600',
                 cursor: 'pointer',
                 transition: 'all 0.2s ease',
-                color: '#0F172A'
+                color: '#FFFFFF',
+                boxShadow: '0 8px 18px rgba(239, 68, 68, 0.35)'
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.background = '#F8FAFC'
+                e.currentTarget.style.background = 'linear-gradient(135deg, #DC2626, #7F1D1D)'
+                e.currentTarget.style.boxShadow = '0 12px 24px rgba(185, 28, 28, 0.45)'
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'white'
+                e.currentTarget.style.background = 'linear-gradient(135deg, #EF4444, #B91C1C)'
+                e.currentTarget.style.boxShadow = '0 8px 18px rgba(239, 68, 68, 0.35)'
               }}
             >
               Logout

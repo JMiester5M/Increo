@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { signInWithPopup } from "firebase/auth"
 import { auth, googleProvider } from "@/lib/firebase"
 import { useRouter } from "next/navigation"
@@ -10,6 +10,17 @@ export default function Home() {
   const [isSignUpMode, setIsSignUpMode] = useState(false)
   const [loading, setLoading] = useState(false)
   const router = useRouter()
+
+  useEffect(() => {
+    // Give the home page a full-bleed green background without the light shell
+    document.body.classList.add("home-hero-bg")
+    document.documentElement.classList.add("home-hero-bg-root")
+
+    return () => {
+      document.body.classList.remove("home-hero-bg")
+      document.documentElement.classList.remove("home-hero-bg-root")
+    }
+  }, [])
 
   const handleGoogleSignIn = async () => {
     setLoading(true)
@@ -121,17 +132,17 @@ export default function Home() {
       </div>
 
       {/* Navigation */}
-      <nav className="relative z-40" style={{ padding: '1.5rem 4rem' }}>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-white rounded-lg relative flex items-center justify-center">
-              <span className="text-emerald-600 font-bold text-lg">$</span>
-            </div>
-            <span className="text-2xl font-bold text-white tracking-tight" style={{ fontFamily: 'Space Grotesk, sans-serif', letterSpacing: '-0.5px' }}>
-              Increo
-            </span>
-          </div>
-        </div>
+      <nav className="relative z-40 flex justify-center" style={{ padding: '1.5rem 4rem' }}>
+        <span
+          className="font-bold text-white"
+          style={{
+            fontFamily: 'Space Grotesk, sans-serif',
+            letterSpacing: '-0.5px',
+            fontSize: '3.5rem'
+          }}
+        >
+          Increo
+        </span>
       </nav>
 
       {/* Hero Section */}
@@ -159,24 +170,47 @@ export default function Home() {
               setIsSignUpMode(true)
               setShowSignIn(true)
             }}
-            className="inline-flex items-center gap-2 px-12 py-5 bg-white text-emerald-600 rounded-2xl text-xl font-semibold transition-all"
-            style={{ boxShadow: '0 8px 24px rgba(0, 0, 0, 0.2)' }}
+            className="transition-transform duration-200 ease-out"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              columnGap: '0.75rem',
+              paddingInline: '40px',
+              height: '52px',
+              borderRadius: '999px',
+              backgroundColor: '#FFFFFF',
+              color: '#047857',
+              fontSize: '1.05rem',
+              fontWeight: 600,
+              border: 'none',
+              boxShadow: '0 10px 22px rgba(0, 0, 0, 0.18)',
+              minWidth: '240px'
+            }}
             onMouseOver={(e) => {
-              e.currentTarget.style.transform = 'translateY(-4px)';
-              e.currentTarget.style.boxShadow = '0 12px 32px rgba(0, 0, 0, 0.3)';
+              e.currentTarget.style.boxShadow = '0 16px 32px rgba(0, 0, 0, 0.26)';
+              e.currentTarget.style.transform = 'translateY(-2px) scale(1.03)';
             }}
             onMouseOut={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 8px 24px rgba(0, 0, 0, 0.2)';
+              e.currentTarget.style.boxShadow = '0 10px 22px rgba(0, 0, 0, 0.18)';
+              e.currentTarget.style.transform = 'translateY(0) scale(1)';
             }}
           >
-            Get Started
-            <span className="text-2xl">→</span>
+            <span style={{ letterSpacing: '0.02em' }}>Get Started</span>
+            <span style={{ fontSize: '1.1rem', marginTop: '1px' }}>→</span>
           </button>
         </div>
 
         {/* Feature Cards */}
-        <div className="grid md:grid-cols-3 gap-8 mt-16 px-16">
+        <div
+          className="flex flex-col items-center mx-auto px-6"
+          style={{
+            marginTop: '3.5rem',
+            maxWidth: '720px',
+            width: '100%',
+            rowGap: '2.25rem'
+          }}
+        >
           {[
             { icon: '📊', title: 'Track Spending', desc: 'Easily categorize and monitor where your money goes each month' },
             { icon: '🎯', title: 'Set Goals', desc: 'Create savings goals and watch your progress with visual indicators' },
@@ -188,7 +222,11 @@ export default function Home() {
               style={{
                 background: 'rgba(255, 255, 255, 0.1)',
                 backdropFilter: 'blur(20px)',
-                border: '1px solid rgba(255, 255, 255, 0.2)'
+                border: '1px solid rgba(255, 255, 255, 0.16)',
+                borderRadius: '24px',
+                boxShadow: '0 14px 36px rgba(0, 0, 0, 0.12)',
+                width: '100%',
+                maxWidth: '720px'
               }}
               onMouseOver={(e) => {
                 e.currentTarget.style.transform = 'translateY(-8px)';
@@ -221,17 +259,33 @@ export default function Home() {
               setIsSignUpMode(false)
               setShowSignIn(true)
             }}
-            className="text-white text-base font-semibold border-b-2 border-white pb-1 transition-all"
+            className="transition-transform duration-200 ease-out"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              columnGap: '0.75rem',
+              paddingInline: '32px',
+              height: '48px',
+              borderRadius: '999px',
+              backgroundColor: '#FFFFFF',
+              color: '#047857',
+              fontSize: '0.95rem',
+              fontWeight: 600,
+              border: 'none',
+              boxShadow: '0 8px 18px rgba(0, 0, 0, 0.18)'
+            }}
             onMouseOver={(e) => {
-              e.currentTarget.style.opacity = '0.8';
-              e.currentTarget.style.borderBottomColor = 'transparent';
+              e.currentTarget.style.boxShadow = '0 14px 26px rgba(0, 0, 0, 0.26)';
+              e.currentTarget.style.transform = 'translateY(-2px) scale(1.03)';
             }}
             onMouseOut={(e) => {
-              e.currentTarget.style.opacity = '1';
-              e.currentTarget.style.borderBottomColor = 'white';
+              e.currentTarget.style.boxShadow = '0 8px 18px rgba(0, 0, 0, 0.18)';
+              e.currentTarget.style.transform = 'translateY(0) scale(1)';
             }}
           >
-            Login →
+            <span style={{ letterSpacing: '0.02em' }}>Login</span>
+            <span style={{ fontSize: '1.05rem', marginTop: '1px' }}>→</span>
           </button>
         </div>
       </main>

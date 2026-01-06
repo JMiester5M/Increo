@@ -273,6 +273,16 @@ export default function GoalDetailPage() {
   }
 
   const handleMarkComplete = async () => {
+    // Only allow marking as complete if the goal has reached its target amount
+    const isCompleting = !goal.completed
+    if (isCompleting) {
+      const current = goal.currentAmount || 0
+      if (current < goal.targetAmount) {
+        alert("You haven't reached this goal's target amount yet.")
+        return
+      }
+    }
+
     try {
       const token = await user.getIdToken()
       const res = await fetch(`/api/goals/${goalId}`, {

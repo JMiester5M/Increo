@@ -68,11 +68,25 @@
 html {
   font-family: var(--font-primary);
   color: var(--color-dark);
+  margin: 0;
+  padding: 0;
 }
 
 body {
+  margin: 0;
+  padding: 0;
   background: linear-gradient(180deg, #F8FAFC 0%, #F1F5F9 100%);
   min-height: 100vh;
+}
+
+/* Full-bleed home background */
+.home-hero-bg {
+  background: linear-gradient(135deg, #059669 0%, #047857 50%, #0F172A 100%) !important;
+  min-height: 100vh;
+}
+
+.home-hero-bg-root {
+  background-color: #0F172A !important;
 }
 
 /* Link Styles */
